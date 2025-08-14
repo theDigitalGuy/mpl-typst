@@ -241,11 +241,18 @@ class TypstRenderer(RendererBase):
             else:
                 stroke.kwargs.update({'dash': bounds})
 
+        # Get clipping rectangle from graphics context
+        bbox = gc.get_clip_rectangle()
+        clip = None
+        if bbox:
+            p1, p2 = bbox.get_points()
+            clip = (p1[0], p1[1], p2[0], p2[1])
+
         # Since Typst v0.13.0, path drawing API (aka curve) is more coherent to
         # Matplotlib's Path object.
         subpath: list[Call]
         superpath: list[list[Call]] = []
-        for points, code in path.iter_segments(transform):
+        for points, code in path.iter_segments(transform, clip=clip):
             points = normalize(points)
             scalars = tuple([Scalar(p, 'in') for p in points])
             match code:
